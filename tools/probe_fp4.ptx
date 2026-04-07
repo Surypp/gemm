@@ -1,0 +1,23 @@
+.version 8.7
+.target sm_120
+.address_size 64
+
+// minimal FP4 block-scaled mma probe for ptxas version check
+// if ptxas rejects this, CUDA < minimum required for kind::mxf4nvf4
+
+.visible .entry probe_fp4(
+    .param .u64 ptr_d,
+    .param .u64 ptr_a,
+    .param .u64 ptr_b,
+    .param .u64 ptr_sa,
+    .param .u64 ptr_sb)
+{
+    .reg .f32 %f<4>;
+    .reg .u32 %r<5>;
+    .reg .u64 %rd<5>;
+
+    mma.sync.aligned.m16n8k64.row.col.kind::mxf4nvf4.block_scale.scale_vec::4X.f32.e2m1.e2m1.f32.ue4m3
+        {%f0,%f1,%f2,%f3}, {%r0,%r1}, {%r2}, {%f0,%f1,%f2,%f3}, %r3, %r4;
+
+    ret;
+}

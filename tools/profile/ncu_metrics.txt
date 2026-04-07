@@ -1,0 +1,68 @@
+# Nsight Compute metric list for GEMM analysis
+# Usage: ncu --metrics <metric1>,<metric2>,... ./gemm_bench ...
+# Group the metrics by concern and run one group at a time to avoid
+# excessive replay passes (each replay reruns the kernel).
+
+# ─── Memory bandwidth (Group 1) ───────────────────────────────────────────────
+# HBM bytes read from L2 perspective (actual global load bytes)
+l1tex__t_bytes_pipe_lsu_mem_global_op_ld.sum
+
+# L2 → HBM bytes (if L2 miss → goes to HBM)
+lts__t_bytes_equiv_l1sectmiss_pipe_lsu_mem_global_op_ld.sum
+
+# L2 hit rate for load operations
+lts__t_sector_hit_rate.pct
+
+# Shared memory load/store bytes
+l1tex__data_pipe_lsu_wavefronts_mem_shared_op_ld.sum
+l1tex__data_pipe_lsu_wavefronts_mem_shared_op_st.sum
+
+# ─── Bank conflicts (Group 2) ─────────────────────────────────────────────────
+# Shared memory bank conflicts on loads (the key metric for Phase 2)
+l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum
+# Shared memory bank conflicts on stores
+l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum
+# Bank conflicts as fraction of total shared accesses
+l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.pct
+
+# ─── Tensor core utilization (Group 3) ───────────────────────────────────────
+# % of peak tensor core throughput achieved
+sm__inst_executed_pipe_tensor.avg.pct_of_peak_sustained_active
+
+# Tensor core instructions executed
+sm__inst_executed_pipe_tensor.sum
+
+# ─── Compute utilization (Group 4) ───────────────────────────────────────────
+# SM active cycles as fraction of elapsed cycles
+sm__cycles_active.avg.pct_of_peak_sustained_elapsed
+
+# Warp issue slots used
+sm__issue_active.avg.pct_of_peak_sustained_active
+
+# ─── Occupancy (Group 5) ──────────────────────────────────────────────────────
+# Theoretical occupancy (from register/smem constraints)
+sm__maximum_warps_per_active_cycle_pct
+
+# Achieved occupancy
+sm__warps_active.avg.pct_of_peak_sustained_active
+
+# Register usage per thread (from ptxas -v, but also visible here)
+# (no ncu metric for this; read from ptxas output or --print-nvvm-ir)
+
+# ─── Pipeline stalls (Group 6) ────────────────────────────────────────────────
+# Warp stall reason: waiting on shared memory (smem data hazard)
+smsp__average_warp_latency_due_to_memory_dependency_pipe_lsu.ratio
+
+# Warp stall reason: long-scoreboard (waiting on L1/L2/HBM)
+smsp__average_warp_latency_due_to_long_scoreboard.ratio
+
+# ─── cp.async / TMA (Group 7, Ampere+) ───────────────────────────────────────
+# Bytes transferred via cp.async (should match load bytes for async pipeline)
+# (check via memory throughput metrics above combined with warp stall)
+
+# ─── Quick summary set (use for fast iteration) ───────────────────────────────
+# Run with:
+#   ncu --metrics sm__inst_executed_pipe_tensor.avg.pct_of_peak_sustained_active,\
+#     l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum,\
+#     sm__warps_active.avg.pct_of_peak_sustained_active \
+#     ./gemm_bench --phase 3 --dtype fp16

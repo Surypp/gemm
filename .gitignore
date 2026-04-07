@@ -1,0 +1,10 @@
+build/
+.vs/
+build_out.txt
+*.exe
+*.obj
+*.lib
+*.pdb
+*.cubin
+*.fatbin
+*.sass

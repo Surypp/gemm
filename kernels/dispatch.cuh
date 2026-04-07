@@ -8,6 +8,7 @@
 #include "phase3_wmma/gemm_wmma.cuh"
 #include "phase4_pipeline/gemm_pipeline.cuh"
 #include "phase5_ptx/gemm_mma_ptx.cuh"
+#include "phase6_advanced/gemm_ldmatrix.cuh"
 
 #include <stdexcept>
 #include <string>
@@ -20,7 +21,8 @@ enum class Phase {
     Wmma     = 3,
     Pipeline = 4,
     PTX      = 5,
-    Hopper   = 6,
+    LdMatrix = 6,
+    Hopper   = 7,
 };
 
 inline const char* phase_name(Phase p) {
@@ -31,6 +33,7 @@ inline const char* phase_name(Phase p) {
         case Phase::Wmma:     return "wmma";
         case Phase::Pipeline: return "pipeline";
         case Phase::PTX:      return "ptx";
+        case Phase::LdMatrix: return "ldmatrix";
         case Phase::Hopper:   return "hopper";
         default:              return "unknown";
     }
@@ -83,6 +86,11 @@ inline void dispatch_fp16(
     case Phase::PTX:
         if      (BM==128 && BN==128 && BK==32) launch_gemm_mma_ptx<128,128,32,2,4>(desc, stream);
         else throw std::runtime_error("PTX: unsupported tile config (BK=64 exceeds 48KB smem on sm_120)");
+        break;
+
+    case Phase::LdMatrix:
+        if      (BM==128 && BN==128 && BK==32) launch_gemm_ldmatrix<128,128,32,2,4>(desc, stream);
+        else throw std::runtime_error("LdMatrix: unsupported tile config");
         break;
 
     case Phase::Hopper:

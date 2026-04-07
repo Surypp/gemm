@@ -41,6 +41,7 @@ add_subdirectory(kernels/phase2_swizzle)
 add_subdirectory(kernels/phase3_wmma)
 add_subdirectory(kernels/phase4_pipeline)
 add_subdirectory(kernels/phase5_ptx)
+add_subdirectory(kernels/phase6_advanced)
 
 if(GEMM_ENABLE_HOPPER)
     # Hopper kernels need sm_90a — verify it is in the arch list

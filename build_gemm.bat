@@ -7,7 +7,7 @@ echo ========================================
 echo.
 
 :: Configuration
-set PROJECT_DIR=C:\Users\lance\Music\gemm
+set PROJECT_DIR=%~dp0
 set VCVARS="C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat"
 set ARCH=x64
 set BUILD_TYPE=Release

@@ -46,6 +46,8 @@ static const std::vector<Phase> kPhases = {
     Phase::Wmma,
     Phase::Pipeline,
     Phase::PTX,
+    Phase::LdMatrix,
+    Phase::CpAsync,
 };
 
 // --- FP16 suite ---

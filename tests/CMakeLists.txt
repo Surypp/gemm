@@ -8,11 +8,14 @@ add_executable(gemm_tests
     test_phase5.cpp
     test_phase5_micro.cu
     test_phase6a.cpp
+    test_phase6b.cpp
+    test_phase6c.cpp
 )
 # test files include CUDA device headers; compile them with nvcc.
 set_source_files_properties(
     test_main.cpp test_phase0.cpp test_phase1.cpp test_phase2.cpp
     test_phase3.cpp test_phase4.cpp test_phase5.cpp test_phase6a.cpp
+    test_phase6b.cpp test_phase6c.cpp
     PROPERTIES LANGUAGE CUDA
 )
 target_include_directories(gemm_tests
@@ -39,6 +42,8 @@ target_link_libraries(gemm_tests
         gemm_phase4
         gemm_phase5
         gemm_phase6a
+        gemm_phase6b
+        gemm_phase6c
         CUDA::cudart
         CUDA::cublas
         GTest::gtest

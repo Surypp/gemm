@@ -44,9 +44,23 @@ struct SwizzlePattern {
     static constexpr int kElemsPerLine = 128 / DtypeBytes;
 
     // Number of rows after which the XOR pattern repeats.
-    // For FP16, BK=32:  kElemsPerWord=2, kBanks=32 → group_size = 32*2/32 = 2
-    // For FP16, BK=64:  group_size = 64*2/32 = 4 ... etc.
-    static constexpr int kGroupSize  = (BK * kElemsPerWord) / kBanks;
+    //
+    // bank(r, swz_word) = (r * kWords + swz_word) % kBanks
+    // where kWords = BK / kElemsPerWord.
+    //
+    // The row term r*kWords has period kBanks/gcd(kBanks, kWords) in r.
+    // The XOR must change once per period, not once per kGroupSize rows.
+    //
+    // For FP16 BK=32: kWords=16, gcd(32,16)=16 → kGroupSize=2, kGroupShift=1 ✓
+    // For FP16 BK=64: kWords=32, gcd(32,32)=32 → kGroupSize=1, kGroupShift=0 ✓
+    //   (r*32 ≡ 0 mod 32 always, so the XOR must uniquely identify every row)
+    static constexpr int kWords = BK / kElemsPerWord;
+    static constexpr int kGCD   = []() constexpr {
+        int a = kBanks, b = kWords;
+        while (b) { int t = b; b = a % b; a = t; }
+        return a;
+    }();
+    static constexpr int kGroupSize  = kBanks / kGCD;
     static constexpr int kGroupShift = []() constexpr {
         int g = kGroupSize, s = 0;
         while (g > 1) { g >>= 1; ++s; }

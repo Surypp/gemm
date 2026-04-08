@@ -44,9 +44,15 @@ inline DeviceInfo query_device(int device_id = 0) {
     info.l2_cache_size_bytes             = prop.l2CacheSize;
     info.memory_bus_width_bits           = prop.memoryBusWidth;
 #if CUDART_VERSION >= 13000
-    // clockRate and memoryClockRate removed in CUDA 13
-    info.clock_rate_khz                  = 0;
-    info.memory_clock_rate_khz           = 0;
+    // clockRate/memoryClockRate removed from cudaDeviceProp in CUDA 13;
+    // cudaDeviceGetAttribute still exposes them
+    {
+        int v = 0;
+        cudaDeviceGetAttribute(&v, cudaDevAttrClockRate,       device_id);
+        info.clock_rate_khz = v;
+        cudaDeviceGetAttribute(&v, cudaDevAttrMemoryClockRate, device_id);
+        info.memory_clock_rate_khz = v;
+    }
 #else
     info.clock_rate_khz                  = prop.clockRate;
     info.memory_clock_rate_khz           = prop.memoryClockRate;

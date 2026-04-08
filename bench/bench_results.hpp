@@ -35,17 +35,12 @@ struct ResultTable {
                 "mean_ms", "TFLOPS", "min_ms", "% peak");
         fprintf(out, "%s\n", std::string(90, '-').c_str());
         for (auto& r : rows) {
-            if (!r.error.empty()) {
-                fprintf(out, "%-12s %-5s %5d %5d %5d  ERROR: %s\n",
-                        r.phase.c_str(), r.dtype.c_str(),
-                        r.M, r.N, r.K, r.error.c_str());
-            } else {
-                fprintf(out, "%-12s %-5s %5d %5d %5d %4d %4d %4d %8.3f %8.2f %8.3f %6.1f\n",
-                        r.phase.c_str(), r.dtype.c_str(),
-                        r.M, r.N, r.K,
-                        r.BM, r.BN, r.BK,
-                        r.mean_ms, r.tflops, r.min_ms, r.pct_cublas_peak);
-            }
+            if (!r.error.empty()) continue;
+            fprintf(out, "%-12s %-5s %5d %5d %5d %4d %4d %4d %8.3f %8.2f %8.3f %6.1f\n",
+                    r.phase.c_str(), r.dtype.c_str(),
+                    r.M, r.N, r.K,
+                    r.BM, r.BN, r.BK,
+                    r.mean_ms, r.tflops, r.min_ms, r.pct_cublas_peak);
         }
     }
 

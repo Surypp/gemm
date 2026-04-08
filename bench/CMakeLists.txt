@@ -30,7 +30,9 @@ target_link_libraries(gemm_bench
         gemm_phase3
         gemm_phase4
         gemm_phase5
-	gemm_phase6a
+        gemm_phase6a
+        gemm_phase6b
+        gemm_phase6c
         CUDA::cudart
         CUDA::cublas
 )

@@ -56,7 +56,7 @@ double measure_cublas_fp32_tflops(int M, int N, int K, int iters = 20) {
     }
 
     cublasDestroy(handle);
-    return compute_tflops(M, N, K, stats.mean());
+    return compute_tflops(M, N, K, stats.min());
 }
 
 } // namespace bench_cublas

@@ -49,22 +49,47 @@ static const std::vector<Phase> kPhases = {
 };
 
 // --- FP16 suite ---
-ResultTable run_suite_fp16(int warmup = 5, int iters = 20) {
+ResultTable run_suite_fp16(int warmup, int iters,
+                           const std::string& phase_filter,
+                           const std::string& size_filter) {
     ResultTable table;
 
+    // apply filters
+    std::vector<Phase> active_phases;
+    for (auto p : kPhases) {
+        if (phase_filter.empty() || phase_filter == phase_name(p))
+            active_phases.push_back(p);
+    }
+    std::vector<ProblemSize> active_problems;
+    for (auto& p : kProblems) {
+        bool match_label = size_filter == p.label;
+        bool match_dim   = size_filter == std::to_string(p.M) && p.M == p.N && p.M == p.K;
+        if (size_filter.empty() || match_label || match_dim)
+            active_problems.push_back(p);
+    }
+
+    if (active_phases.empty()) {
+        fprintf(stderr, "no phase matched '%s'\n", phase_filter.c_str());
+        return table;
+    }
+    if (active_problems.empty()) {
+        fprintf(stderr, "no size matched '%s'\n", size_filter.c_str());
+        return table;
+    }
+
     // Establish cuBLAS baselines for each problem size
-    std::vector<double> cublas_tflops(kProblems.size());
+    std::vector<double> cublas_tflops(active_problems.size());
     printf("Measuring cuBLAS FP16 baselines...\n");
-    for (size_t pi = 0; pi < kProblems.size(); ++pi) {
-        auto& p = kProblems[pi];
+    for (size_t pi = 0; pi < active_problems.size(); ++pi) {
+        auto& p = active_problems[pi];
         cublas_tflops[pi] = bench_cublas::measure_cublas_fp16_tflops(
             p.M, p.N, p.K, iters);
         printf("  cuBLAS FP16  %s : %.2f TFLOPS\n", p.label, cublas_tflops[pi]);
     }
 
-    for (auto phase : kPhases) {
-        for (size_t pi = 0; pi < kProblems.size(); ++pi) {
-            auto& prob = kProblems[pi];
+    for (auto phase : active_phases) {
+        for (size_t pi = 0; pi < active_problems.size(); ++pi) {
+            auto& prob = active_problems[pi];
             for (auto& tile : kTiles) {
                 BenchmarkRow row;
                 row.phase = phase_name(phase);
@@ -106,7 +131,9 @@ ResultTable run_suite_fp16(int warmup = 5, int iters = 20) {
                     row.mean_ms   = stats.mean();
                     row.stddev_ms = stats.stddev();
                     row.min_ms    = stats.min();
-                    row.tflops    = gemm::compute_tflops(prob.M, prob.N, prob.K, row.mean_ms);
+                    // min_ms: best observed latency, less susceptible to scheduler jitter
+                    // (Windows power management makes mean unreliable across configs)
+                    row.tflops    = gemm::compute_tflops(prob.M, prob.N, prob.K, row.min_ms);
                     row.pct_cublas_peak = 100.0 * row.tflops / cublas_tflops[pi];
 
                 } catch (const std::exception& e) {

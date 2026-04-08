@@ -9,6 +9,8 @@
 #include "phase4_pipeline/gemm_pipeline.cuh"
 #include "phase5_ptx/gemm_mma_ptx.cuh"
 #include "phase6_advanced/gemm_ldmatrix.cuh"
+#include "phase6_advanced/gemm_cpasync.cuh"
+#include "phase6_advanced/gemm_tma_mmasync.cuh"
 
 #include <stdexcept>
 #include <string>
@@ -23,6 +25,8 @@ enum class Phase {
     PTX      = 5,
     LdMatrix = 6,
     Hopper   = 7,
+    CpAsync  = 8,
+    TMA      = 9,
 };
 
 inline const char* phase_name(Phase p) {
@@ -35,6 +39,8 @@ inline const char* phase_name(Phase p) {
         case Phase::PTX:      return "ptx";
         case Phase::LdMatrix: return "ldmatrix";
         case Phase::Hopper:   return "hopper";
+        case Phase::CpAsync:  return "cpasync";
+        case Phase::TMA:      return "tma";
         default:              return "unknown";
     }
 }
@@ -95,6 +101,16 @@ inline void dispatch_fp16(
 
     case Phase::Hopper:
         throw std::runtime_error("Phase::Hopper not available in this build (compile with GEMM_ENABLE_HOPPER=ON)");
+
+    case Phase::CpAsync:
+        if      (BM==128 && BN==128 && BK==32) launch_gemm_cpasync<128,128,32,2,4,3>(desc, stream);
+        else throw std::runtime_error("CpAsync: unsupported tile config");
+        break;
+
+    case Phase::TMA:
+        if      (BM==128 && BN==128 && BK==32) launch_gemm_tma_mmasync<128,128,32,2,4,2>(desc, stream);
+        else throw std::runtime_error("TMA: unsupported tile config");
+        break;
 
     default:
         throw std::runtime_error("Unknown phase");

@@ -1,4 +1,5 @@
 build/
+<<<<<<< HEAD
 .vs/
 build_out.txt
 *.exe
@@ -8,3 +9,28 @@ build_out.txt
 *.cubin
 *.fatbin
 *.sass
+=======
+*.cubin
+*.fatbin
+*.ptxas
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.suo
+*.user
+.vs/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+*.ninja
+.ninja_deps
+.ninja_log
+>>>>>>> 1572328 (refactor: restructured phase directories)

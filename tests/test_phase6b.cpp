@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase6_advanced/gemm_cpasync.cuh"
+#include "kernels/phase6b_multistage/gemm_cpasync.cuh"
 
 // --- Phase 6b: real cp.async + 3-stage pipelining ---
 // Same correctness suite as Phase 6a. The compute core (ldmatrix + mma.sync)

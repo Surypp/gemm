@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "gemm/error_check.cuh"
-#include "kernels/phase5_ptx/mma_ptx_utils.cuh"
+#include "kernels/phase5_ptx_mma/mma_ptx_utils.cuh"
 
 // --- DiagResult ---
 struct DiagResult {

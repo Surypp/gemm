@@ -20,9 +20,7 @@ if "%BUILD_TYPE%"=="" set BUILD_TYPE=Release
 set DO_CLEAN=0
 if "%~3"=="--clean" set DO_CLEAN=1
 
-set VCVARS="C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat"
-if not exist %VCVARS% set VCVARS="C:\Program Files\Microsoft Visual Studio\17\Community\VC\Auxiliary\Build\vcvarsall.bat"
-if not exist %VCVARS% set VCVARS="C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat"
+set VCVARS="C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat"
 
 call %VCVARS% x64
 if errorlevel 1 (

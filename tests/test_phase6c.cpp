@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase6_advanced/gemm_tma_mmasync.cuh"
+#include "kernels/phase6c_tma/gemm_tma_mmasync.cuh"
 
 // --- Phase 6c: TMA multi-stage + mma.sync ---
 // Same correctness suite as Phase 6a/6b.  The compute core (ldmatrix + mma.sync)

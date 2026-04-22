@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase4_pipeline/gemm_pipeline.cuh"
+#include "kernels/phase4_cp_async/gemm_pipeline.cuh"
 
 class Phase4Test : public ::testing::Test {
 protected:

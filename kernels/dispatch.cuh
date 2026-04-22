@@ -3,14 +3,14 @@
 #include "gemm/types.cuh"
 
 #include "phase0_naive/gemm_naive.cuh"
-#include "phase1_shmem/gemm_shmem.cuh"
+#include "phase1_tiling/gemm_shmem.cuh"
 #include "phase2_swizzle/gemm_swizzle.cuh"
 #include "phase3_wmma/gemm_wmma.cuh"
-#include "phase4_pipeline/gemm_pipeline.cuh"
-#include "phase5_ptx/gemm_mma_ptx.cuh"
-#include "phase6_advanced/gemm_ldmatrix.cuh"
-#include "phase6_advanced/gemm_cpasync.cuh"
-#include "phase6_advanced/gemm_tma_mmasync.cuh"
+#include "phase4_cp_async/gemm_pipeline.cuh"
+#include "phase5_ptx_mma/gemm_mma_ptx.cuh"
+#include "phase6a_ldmatrix/gemm_ldmatrix.cuh"
+#include "phase6b_multistage/gemm_cpasync.cuh"
+#include "phase6c_tma/gemm_tma_mmasync.cuh"
 
 #include <stdexcept>
 #include <string>

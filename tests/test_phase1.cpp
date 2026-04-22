@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase1_shmem/gemm_shmem.cuh"
+#include "kernels/phase1_tiling/gemm_shmem.cuh"
 
 class Phase1Test : public ::testing::Test {
 protected:

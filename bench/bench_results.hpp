@@ -13,11 +13,11 @@ struct BenchmarkRow {
     std::string dtype;
     int M, N, K;
     int BM, BN, BK;
-    double mean_ms;
-    double stddev_ms;
-    double min_ms;
-    double tflops;
-    double pct_cublas_peak;  // 0 until set by bench_suite
+    double mean_ms        = 0.0;
+    double stddev_ms      = 0.0;
+    double min_ms         = 0.0;
+    double tflops         = 0.0;
+    double pct_cublas_peak = 0.0;
     std::string error;       // non-empty if launch failed
 };
 
@@ -49,6 +49,7 @@ struct ResultTable {
         std::ofstream f(path);
         f << "phase,dtype,M,N,K,BM,BN,BK,mean_ms,stddev_ms,min_ms,tflops,pct_cublas_peak,error\n";
         for (auto& r : rows) {
+            if (!r.error.empty()) continue;
             f << r.phase   << ","
               << r.dtype   << ","
               << r.M       << "," << r.N << "," << r.K << ","

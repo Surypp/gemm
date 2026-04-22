@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase6_advanced/gemm_ldmatrix.cuh"
+#include "kernels/phase6a_ldmatrix/gemm_ldmatrix.cuh"
 
 // --- Phase 6a: ldmatrix + mma.sync ---
 // Same correctness suite as Phase 5. The only difference is that A/B fragments

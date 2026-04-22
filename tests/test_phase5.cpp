@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "test_correctness.cuh"
-#include "kernels/phase5_ptx/gemm_mma_ptx.cuh"
-#include "kernels/phase5_ptx/mma_ptx_utils.cuh"
+#include "kernels/phase5_ptx_mma/gemm_mma_ptx.cuh"
+#include "kernels/phase5_ptx_mma/mma_ptx_utils.cuh"
 
 // --- Phase 5 ---
 // The PTX register layout is the trickiest part of Phase 5.

@@ -50,11 +50,7 @@ struct HostMatrix {
                               uint64_t seed = 42)
     {
         HostMatrix m(rows, cols);
-<<<<<<< HEAD
-        std::mt19937 rng(seed);
-=======
         std::mt19937_64 rng(seed);
->>>>>>> 1572328 (refactor: restructured phase directories)
         std::uniform_real_distribution<float> dist(lo, hi);
         for (int r = 0; r < rows; ++r)
             for (int c = 0; c < cols; ++c)

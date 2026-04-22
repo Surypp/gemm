@@ -1,15 +1,4 @@
 build/
-<<<<<<< HEAD
-.vs/
-build_out.txt
-*.exe
-*.obj
-*.lib
-*.pdb
-*.cubin
-*.fatbin
-*.sass
-=======
 *.cubin
 *.fatbin
 *.ptxas
@@ -33,4 +22,3 @@ Makefile
 *.ninja
 .ninja_deps
 .ninja_log
->>>>>>> 1572328 (refactor: restructured phase directories)

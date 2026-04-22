@@ -201,15 +201,23 @@ void launch_gemm_tma_mmasync(GemmDescRowMajor<FP16Tag>& desc, cudaStream_t strea
         desc.B, desc.K, desc.N, BK, BN, sizeof(__half),
         CU_TENSOR_MAP_SWIZZLE_NONE);
 
-    // cudaMallocAsync enqueues the allocation in the stream — no CPU stall between
-    // cudaEventRecord(_start) and the first memcpy, fixing timing variance at small M.
-    CUtensorMap *d_tma_A, *d_tma_B;
-    CUDA_CHECK(cudaMallocAsync(&d_tma_A, sizeof(CUtensorMap), stream));
-    CUDA_CHECK(cudaMallocAsync(&d_tma_B, sizeof(CUtensorMap), stream));
-    CUDA_CHECK(cudaMemcpyAsync(d_tma_A, &h_tma_A,
-                               sizeof(CUtensorMap), cudaMemcpyHostToDevice, stream));
-    CUDA_CHECK(cudaMemcpyAsync(d_tma_B, &h_tma_B,
-                               sizeof(CUtensorMap), cudaMemcpyHostToDevice, stream));
+    // Pre-allocate device descriptors once per template instantiation.
+    // Avoids stream-ordered malloc/free overhead inside the GPU-timed hot path.
+    // Re-upload only when descriptor content changes (matrix ptr or dims changed).
+    static CUtensorMap *d_tma_A = nullptr, *d_tma_B = nullptr;
+    static CUtensorMap cached_A{}, cached_B{};
+    if (!d_tma_A) {
+        CUDA_CHECK(cudaMalloc(&d_tma_A, sizeof(CUtensorMap)));
+        CUDA_CHECK(cudaMalloc(&d_tma_B, sizeof(CUtensorMap)));
+    }
+    if (memcmp(&h_tma_A, &cached_A, sizeof(CUtensorMap)) != 0) {
+        CUDA_CHECK(cudaMemcpy(d_tma_A, &h_tma_A, sizeof(CUtensorMap), cudaMemcpyHostToDevice));
+        cached_A = h_tma_A;
+    }
+    if (memcmp(&h_tma_B, &cached_B, sizeof(CUtensorMap)) != 0) {
+        CUDA_CHECK(cudaMemcpy(d_tma_B, &h_tma_B, sizeof(CUtensorMap), cudaMemcpyHostToDevice));
+        cached_B = h_tma_B;
+    }
 
     dim3 block(32 * WARP_N, WARP_M);
     dim3 grid((desc.N + BN - 1) / BN, (desc.M + BM - 1) / BM);
@@ -230,10 +238,6 @@ void launch_gemm_tma_mmasync(GemmDescRowMajor<FP16Tag>& desc, cudaStream_t strea
             static_cast<float>(desc.alpha),
             static_cast<float>(desc.beta));
     CUDA_CHECK_LAST();
-
-    CUDA_CHECK(cudaStreamSynchronize(stream));
-    CUDA_CHECK(cudaFreeAsync(d_tma_A, stream));
-    CUDA_CHECK(cudaFreeAsync(d_tma_B, stream));
 #endif // !defined(__CUDA_ARCH__)
 }
 

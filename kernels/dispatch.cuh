@@ -108,7 +108,7 @@ inline void dispatch_fp16(
         break;
 
     case Phase::TMA:
-        if      (BM==128 && BN==128 && BK==32) launch_gemm_tma_mmasync<128,128,32,2,4,2>(desc, stream);
+        if      (BM==128 && BN==128 && BK==32) launch_gemm_tma_mmasync<128,128,32,2,4,3>(desc, stream);
         else throw std::runtime_error("TMA: unsupported tile config");
         break;
 

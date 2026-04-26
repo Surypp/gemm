@@ -58,7 +58,10 @@ inline void print_device_info(const DeviceInfo& info) {
     printf("  L2 cache         : %.1f MB\n", info.l2_cache_size_bytes / 1e6);
     printf("  Shared mem/SM    : %.0f KB\n", info.max_shared_mem_per_sm_bytes / 1e3);
     printf("  Max threads/SM   : %d\n",      info.max_threads_per_sm);
-    printf("  Memory bandwidth : %.1f GB/s\n",
+    // NOTE: ROCm reports memoryClockRate as the base GDDR6 oscillator (kHz), not the
+    // effective data rate. The 2x DDR factor is not enough — actual BW is ~6-8x higher
+    // than displayed here. Use rocm-smi --showmeminfo vram for the correct figure.
+    printf("  Memory bandwidth : ~%.0f GB/s (display underestimates; see NOTE above)\n",
            2.0 * info.memory_clock_rate_khz * 1e3
                * (info.memory_bus_width_bits / 8) / 1e9);
 }

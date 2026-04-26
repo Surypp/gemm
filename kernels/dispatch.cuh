@@ -103,7 +103,7 @@ inline void dispatch_fp16(
         throw std::runtime_error("Phase::Hopper not available in this build (compile with GEMM_ENABLE_HOPPER=ON)");
 
     case Phase::CpAsync:
-        if      (BM==128 && BN==128 && BK==32) launch_gemm_cpasync<128,128,32,2,4,3>(desc, stream);
+        if      (BM==128 && BN==128 && BK==32) launch_gemm_cpasync<128,128,32,2,4,2>(desc, stream);
         else throw std::runtime_error("CpAsync: unsupported tile config");
         break;
 

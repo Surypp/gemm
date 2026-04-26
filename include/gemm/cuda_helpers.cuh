@@ -15,8 +15,8 @@ struct DeviceInfo {
     int    compute_minor;
     size_t total_global_mem_bytes;
     int    sm_count;
-    int    max_shared_mem_per_block_bytes;
-    int    max_shared_mem_per_sm_bytes;
+    size_t max_shared_mem_per_block_bytes;
+    size_t max_shared_mem_per_sm_bytes;
     int    warp_size;
     int    max_threads_per_sm;
     int    max_threads_per_block;

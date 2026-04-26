@@ -168,4 +168,7 @@ void launch_gemm_pipeline(GemmDescRowMajor<FP16Tag>& desc, hipStream_t stream = 
         GemmDescRowMajor<FP16Tag>&, hipStream_t);
 
 DECL_PIPE(128, 128, 32, 2, 4, 2)
+DECL_PIPE(128, 128, 32, 4, 4, 2)
+DECL_PIPE(128, 256, 32, 2, 4, 2)
+DECL_PIPE(128, 256, 32, 4, 4, 2)
 #undef DECL_PIPE

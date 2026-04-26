@@ -173,9 +173,11 @@ void launch_gemm_wmma(GemmDescRowMajor<FP16Tag>& desc, hipStream_t stream = 0) {
     HIP_CHECK_LAST();
 }
 
-#define DECL_WMMA(BM, BN, BK) \
-    extern template void launch_gemm_wmma<BM, BN, BK>(GemmDescRowMajor<FP16Tag>&, hipStream_t);
+#define DECL_WMMA(BM, BN, BK, WM, WN) \
+    extern template void launch_gemm_wmma<BM, BN, BK, WM, WN>(GemmDescRowMajor<FP16Tag>&, hipStream_t);
 
-DECL_WMMA(128, 128, 32)
-DECL_WMMA(128, 256, 32)
+DECL_WMMA(128, 128, 32, 2, 4)
+DECL_WMMA(128, 128, 32, 4, 4)
+DECL_WMMA(128, 128, 64, 2, 4)
+DECL_WMMA(128, 256, 32, 2, 4)
 #undef DECL_WMMA

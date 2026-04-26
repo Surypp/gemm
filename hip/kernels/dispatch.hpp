@@ -52,12 +52,15 @@ inline void dispatch_fp16(
 
     case Phase::Wmma:
         if      (BM==128 && BN==128 && BK==32) launch_gemm_wmma<128, 128, 32>(desc, stream);
+        else if (BM==128 && BN==128 && BK==64) launch_gemm_wmma<128, 128, 64>(desc, stream);
         else if (BM==128 && BN==256 && BK==32) launch_gemm_wmma<128, 256, 32>(desc, stream);
         else throw std::runtime_error("Wmma: unsupported tile config");
         break;
 
     case Phase::Pipeline:
+        // 128×256 uses 4×4 warp grid: 512 threads, FRAGS_M=2 FRAGS_N=4 (8 frags/warp) — same density as 128×128
         if      (BM==128 && BN==128 && BK==32) launch_gemm_pipeline<128, 128, 32, 2, 4, 2>(desc, stream);
+        else if (BM==128 && BN==256 && BK==32) launch_gemm_pipeline<128, 256, 32, 4, 4, 2>(desc, stream);
         else throw std::runtime_error("Pipeline: unsupported tile config");
         break;
 

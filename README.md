@@ -1,4 +1,4 @@
-v# GEMM CUDA -- Naive to TMA, three architectures
+# GEMM to ptx level
 
 C = A x B in FP16 with FP32 accumulation.
 9 progressive phases, from ~3.6 TFLOPS (naive baseline) to TMA + mbarrier

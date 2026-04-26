@@ -68,3 +68,42 @@ TEST_F(Phase6cKernelTest, Tile128_256x256x256) {
     res.print("tma fp16 BM128 BN128 BK32 NS2 [256x256x256]");
     EXPECT_TRUE(res.passed);
 }
+
+// --- H8/H9 diagnostic tests (2026-04-26) ---
+// Isolate (num_K_tiles) vs (grid_size) as independent variables for the sq2k hang.
+
+// 1 bloc, 64 K-tiles — isolates num_tiles without grid pressure
+TEST_F(Phase6cKernelTest, Diag_1bloc_64tiles) {
+    auto res = check_fp16_kernel(
+        [](GemmDescRowMajor<FP16Tag>& d) { launch_gemm_tma_mmasync<128,128,32,2,4,2>(d); },
+        128, 128, 2048, tol);
+    res.print("tma diag [128x128x2048]   (1 bloc, 64 K-tiles)");
+    EXPECT_TRUE(res.passed);
+}
+
+// 256 blocs, 1 K-tile — isolates grid size without K-tile pressure
+TEST_F(Phase6cKernelTest, Diag_256blocs_1tile) {
+    auto res = check_fp16_kernel(
+        [](GemmDescRowMajor<FP16Tag>& d) { launch_gemm_tma_mmasync<128,128,32,2,4,2>(d); },
+        2048, 2048, 32, tol);
+    res.print("tma diag [2048x2048x32]   (256 blocs, 1 K-tile)");
+    EXPECT_TRUE(res.passed);
+}
+
+// 64 blocs, 64 K-tiles — H9 correctness regression test (was FAIL before fence fix)
+TEST_F(Phase6cKernelTest, Diag_64blocs_64tiles) {
+    auto res = check_fp16_kernel(
+        [](GemmDescRowMajor<FP16Tag>& d) { launch_gemm_tma_mmasync<128,128,32,2,4,2>(d); },
+        1024, 1024, 2048, tol);
+    res.print("tma diag [1024x1024x2048] (64 blocs, 64 K-tiles)");
+    EXPECT_TRUE(res.passed);
+}
+
+// 128 blocs, 64 K-tiles — H9 correctness regression test (was FAIL before fence fix)
+TEST_F(Phase6cKernelTest, Diag_128blocs_64tiles) {
+    auto res = check_fp16_kernel(
+        [](GemmDescRowMajor<FP16Tag>& d) { launch_gemm_tma_mmasync<128,128,32,2,4,2>(d); },
+        1024, 2048, 2048, tol);
+    res.print("tma diag [1024x2048x2048] (128 blocs, 64 K-tiles)");
+    EXPECT_TRUE(res.passed);
+}

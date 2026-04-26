@@ -142,7 +142,12 @@ void mbar_wait(uint64_t* mbar, uint32_t parity) {
         "@!done bra WAIT;\n"
         "}\n"
         :: "r"(addr), "r"(parity)
+        : "memory"
     );
+    // H9: legacy try_wait has no implicit .acquire — TMA async-proxy writes not
+    // guaranteed visible to ldmatrix without explicit proxy fence. Manifests as
+    // silent correctness failure under >=64 concurrent blocks (timing-dependent).
+    asm volatile("fence.proxy.async.shared::cta;\n" ::: "memory");
 }
 
 #endif // __CUDA_ARCH__

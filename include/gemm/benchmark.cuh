@@ -81,7 +81,7 @@ inline BenchmarkResult run_benchmark(
     r.mean_ms  = stats.mean();
     r.stddev_ms= stats.stddev();
     r.min_ms   = stats.min();
-    r.tflops   = compute_tflops(cfg.M, cfg.N, cfg.K, r.mean_ms);
+    r.tflops   = compute_tflops(cfg.M, cfg.N, cfg.K, r.min_ms);
     return r;
 }
 

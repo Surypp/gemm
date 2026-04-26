@@ -49,16 +49,19 @@ struct ResultTable {
         std::ofstream f(path);
         f << "phase,dtype,M,N,K,BM,BN,BK,mean_ms,stddev_ms,min_ms,tflops,pct_cublas_peak,error\n";
         for (auto& r : rows) {
-            if (!r.error.empty()) continue;
             f << r.phase   << ","
               << r.dtype   << ","
               << r.M       << "," << r.N << "," << r.K << ","
-              << r.BM      << "," << r.BN << "," << r.BK << ","
-              << std::fixed << std::setprecision(4)
-              << r.mean_ms << "," << r.stddev_ms << "," << r.min_ms << ","
-              << r.tflops  << ","
-              << std::setprecision(2) << r.pct_cublas_peak << ","
-              << r.error   << "\n";
+              << r.BM      << "," << r.BN << "," << r.BK << ",";
+            if (r.error.empty()) {
+                f << std::fixed << std::setprecision(4)
+                  << r.mean_ms << "," << r.stddev_ms << "," << r.min_ms << ","
+                  << r.tflops  << ","
+                  << std::setprecision(2) << r.pct_cublas_peak << ",";
+            } else {
+                f << ",,,,,,";
+            }
+            f << r.error << "\n";
         }
     }
 

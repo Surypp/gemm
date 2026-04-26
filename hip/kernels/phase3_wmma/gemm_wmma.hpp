@@ -5,6 +5,7 @@
 #include "gemm/types.hpp"
 #include "gemm/swizzle.hpp"
 #include "gemm/error_check.hpp"
+#include "gemm/pipeline.hpp"
 
 namespace wmma = rocwmma;
 
@@ -60,24 +61,47 @@ __global__ void gemm_wmma_kernel(
 
     int num_tiles = (K + BK - 1) / BK;
 
+    // 16-byte (8 half) vectorized loads — same strategy as the pipeline kernel.
+    // Requires BK and BN to be multiples of 8 (true for all instantiated configs).
+    constexpr int ELEMS_PER_CP  = 8;
+    constexpr int A_CHUNKS_ROW  = BK / ELEMS_PER_CP;
+    constexpr int B_CHUNKS_ROW  = BN / ELEMS_PER_CP;
+
     for (int t = 0; t < num_tiles; ++t) {
+        const int gm_base = blockIdx.y * BM;
+        const int gk_base = t * BK;
+        const int gn_base = blockIdx.x * BN;
+
         // --- load A ---
-        for (int i = tid; i < BM * BK; i += total_threads) {
-            int r = i / BK, c = i % BK;
-            int global_r = blockIdx.y * BM + r;
-            int global_c = t * BK + c;
-            smem_A[r][c] = (global_r < M && global_c < K)
-                ? A[global_r * lda + global_c]
-                : __half(0);
+        if (gm_base + BM <= M && gk_base + BK <= K) {
+            for (int i = tid; i < BM * A_CHUNKS_ROW; i += total_threads) {
+                int row = i / A_CHUNKS_ROW;
+                int col = (i % A_CHUNKS_ROW) * ELEMS_PER_CP;
+                hip_load_16b(&smem_A[row][col],
+                             A + (gm_base + row) * lda + gk_base + col);
+            }
+        } else {
+            for (int i = tid; i < BM * BK; i += total_threads) {
+                int r = i / BK, c = i % BK;
+                int gr = gm_base + r, gc = gk_base + c;
+                smem_A[r][c] = (gr < M && gc < K) ? A[gr * lda + gc] : __half(0.f);
+            }
         }
+
         // --- load B ---
-        for (int i = tid; i < BK * BN; i += total_threads) {
-            int r = i / BN, c = i % BN;
-            int global_r = t * BK + r;
-            int global_c = blockIdx.x * BN + c;
-            smem_B[r][c] = (global_r < K && global_c < N)
-                ? B[global_r * ldb + global_c]
-                : __half(0);
+        if (gk_base + BK <= K && gn_base + BN <= N) {
+            for (int i = tid; i < BK * B_CHUNKS_ROW; i += total_threads) {
+                int row = i / B_CHUNKS_ROW;
+                int col = (i % B_CHUNKS_ROW) * ELEMS_PER_CP;
+                hip_load_16b(&smem_B[row][col],
+                             B + (gk_base + row) * ldb + gn_base + col);
+            }
+        } else {
+            for (int i = tid; i < BK * BN; i += total_threads) {
+                int r = i / BN, c = i % BN;
+                int gr = gk_base + r, gc = gn_base + c;
+                smem_B[r][c] = (gr < K && gc < N) ? B[gr * ldb + gc] : __half(0.f);
+            }
         }
         __syncthreads();
 
@@ -111,12 +135,17 @@ __global__ void gemm_wmma_kernel(
             int out_row = c_row_offset + fm * WMMA_M;
             int out_col = c_col_offset + fn * WMMA_N;
             if (out_row < M && out_col < N) {
-                wmma::fragment<wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, float> c_existing;
-                wmma::load_matrix_sync(c_existing, C + out_row * ldc + out_col, ldc,
-                                       wmma::mem_row_major);
-                for (int i = 0; i < (int)c_frag[fm][fn].num_elements; ++i)
-                    c_frag[fm][fn].x[i] = alpha * c_frag[fm][fn].x[i]
-                                        + beta  * c_existing.x[i];
+                if (beta != 0.0f) {
+                    wmma::fragment<wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, float> c_existing;
+                    wmma::load_matrix_sync(c_existing, C + out_row * ldc + out_col, ldc,
+                                           wmma::mem_row_major);
+                    for (int i = 0; i < (int)c_frag[fm][fn].num_elements; ++i)
+                        c_frag[fm][fn].x[i] = alpha * c_frag[fm][fn].x[i]
+                                            + beta  * c_existing.x[i];
+                } else {
+                    for (int i = 0; i < (int)c_frag[fm][fn].num_elements; ++i)
+                        c_frag[fm][fn].x[i] *= alpha;
+                }
                 wmma::store_matrix_sync(C + out_row * ldc + out_col, c_frag[fm][fn],
                                         ldc, wmma::mem_row_major);
             }

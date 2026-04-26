@@ -1,0 +1,1 @@
+gemm_hip_add_kernel_lib(gemm_hip_phase2 gemm_swizzle_fp16.hip)

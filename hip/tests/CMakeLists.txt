@@ -13,6 +13,8 @@ add_executable(gemm_hip_tests
     test_main.cpp
     test_phase0.cpp
     test_phase1.cpp
+    test_phase2.cpp
+    test_phase3.cpp
 )
 
 target_include_directories(gemm_hip_tests PRIVATE
@@ -33,6 +35,8 @@ set_target_properties(gemm_hip_tests PROPERTIES
 target_link_libraries(gemm_hip_tests PRIVATE
     gemm_hip_phase0
     gemm_hip_phase1
+    gemm_hip_phase2
+    gemm_hip_phase3
     hip::host
     roc::rocblas
     GTest::gtest

@@ -45,6 +45,15 @@ void ldmatrix_a_x4(uint32_t &d0, uint32_t &d1, uint32_t &d2, uint32_t &d3,
     );
 }
 
+// uint8_t overload — ldmatrix is data-type agnostic (loads 128 bits regardless).
+// Avoids reinterpret_cast<const __half*> at call sites that hold FP8/uint8 smem.
+__device__ __forceinline__
+void ldmatrix_a_x4(uint32_t &d0, uint32_t &d1, uint32_t &d2, uint32_t &d3,
+                   const uint8_t *smem_ptr)
+{
+    ldmatrix_a_x4(d0, d1, d2, d3, reinterpret_cast<const __half*>(smem_ptr));
+}
+
 // load 2 matrices of 8×8 b16 with transpose — B fragment for mma.sync m16n8k16
 __device__ __forceinline__
 void ldmatrix_b_x2_trans(uint32_t &d0, uint32_t &d1, const __half *smem_ptr)

@@ -17,7 +17,7 @@ struct BenchmarkRow {
     double stddev_ms      = 0.0;
     double min_ms         = 0.0;
     double tflops         = 0.0;
-    double pct_cublas_peak = 0.0;
+    double pct_cublas_peak   = 0.0; // % of cuBLAS same-dtype (FP8 for fp8 runs, FP16 otherwise)
     std::string error;       // non-empty if launch failed
 };
 
@@ -84,7 +84,7 @@ struct ResultTable {
               << "    \"stddev_ms\": "    << r.stddev_ms << ",\n"
               << "    \"min_ms\": "       << r.min_ms << ",\n"
               << "    \"tflops\": "       << std::setprecision(4) << r.tflops << ",\n"
-              << "    \"pct_peak\": "     << std::setprecision(2) << r.pct_cublas_peak << ",\n"
+              << "    \"pct_peak\": "      << std::setprecision(2) << r.pct_cublas_peak << ",\n"
               << "    \"error\": \""      << r.error  << "\"\n"
               << "  }" << (i + 1 < rows.size() ? "," : "") << "\n";
         }

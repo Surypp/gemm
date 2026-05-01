@@ -3,6 +3,8 @@ add_executable(gemm_bench
     bench_suite.cpp
     bench_cublas_fp32.cu
     bench_cublas_fp16.cu
+    bench_cublas_fp8.cu
+    bench_fp8.cu
 )
 # bench_main.cpp and bench_suite.cpp include CUDA device headers directly;
 # compile them with nvcc instead of MSVC.
@@ -33,8 +35,10 @@ target_link_libraries(gemm_bench
         gemm_phase6a
         gemm_phase6b
         gemm_phase6c
+        gemm_phase6e
         CUDA::cudart
         CUDA::cublas
+        CUDA::cublasLt
 )
 if(GEMM_ENABLE_HOPPER)
     target_link_libraries(gemm_bench PRIVATE gemm_phase6)

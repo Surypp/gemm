@@ -10,6 +10,8 @@
 ResultTable run_suite_fp16(int warmup, int iters,
                            const std::string& phase_filter,
                            const std::string& size_filter);
+ResultTable run_suite_fp8(int warmup, int iters,
+                          const std::string& size_filter);
 
 namespace bench_cublas {
 double measure_cublas_fp16_tflops(int M, int N, int K, int iters);
@@ -20,7 +22,7 @@ static void print_usage(const char* prog) {
     fprintf(stderr,
         "Usage: %s [options]\n"
         "Options:\n"
-        "  --dtype   fp16|fp32        (default: fp16)\n"
+        "  --dtype   fp16|fp32|fp8    (default: fp16)\n"
         "  --warmup  N                (default: 5)\n"
         "  --iters   N                (default: 20)\n"
         "  --phase   NAME             run only this phase (naive|shmem|swizzle|wmma|pipeline|ptx|ldmatrix)\n"
@@ -75,8 +77,10 @@ int main(int argc, char** argv) {
     ResultTable table;
     if (dtype == "fp16") {
         table = run_suite_fp16(warmup, iters, phase_filter, size_filter);
+    } else if (dtype == "fp8") {
+        table = run_suite_fp8(warmup, iters, size_filter);
     } else {
-        fprintf(stderr, "dtype '%s' not yet supported in the suite\n", dtype.c_str());
+        fprintf(stderr, "dtype '%s' not supported (fp16|fp32|fp8)\n", dtype.c_str());
         return 1;
     }
 

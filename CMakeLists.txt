@@ -46,6 +46,7 @@ add_subdirectory(kernels/phase5_ptx_mma)
 add_subdirectory(kernels/phase6a_ldmatrix)
 add_subdirectory(kernels/phase6b_multistage)
 add_subdirectory(kernels/phase6c_tma)
+add_subdirectory(kernels/phase6e_fp8)
 
 if(GEMM_ENABLE_BENCH)
     add_subdirectory(bench)
